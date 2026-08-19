@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPAR - Golf Score Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        /* LOGIN SCREEN */
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        /* BUTTONS */
+        button {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(42, 82, 152, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* COURSE SELECTION */
+        .course-option {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .course-option:hover {
+            background: #e3f2fd;
+            border-color: #2a5298;
+        }
+
+        .course-option h3 {
+            color: #2a5298;
+            margin-bottom: 5px;
+        }
+
+        .course-option p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* TEE SELECTION */
+        .tee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tee-option {
+            padding: 15px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .tee-option:hover {
+            border-color: #2a5298;
+            background: #f0f7ff;
+        }
+
+        .tee-option.selected {
+            background: #2a5298;
+            color: white;
+            border-color: #2a5298;
+        }
+
+        .tee-option h4 {
+            margin-bottom: 5px;
+        }
+
+        .tee-option p {
+            font-size: 0.9em;
+        }
+
+        /* SCORECARD */
+        .scorecard-header {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 0;
+        }
+
+        .scorecard-header h2 {
+            margin-bottom: 10px;
+        }
+
+        .player-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            font-size: 0.95em;
+        }
+
+        .player-info div {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .player-info strong {
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        /* HOLE INPUTS */
+        .holes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .hole-card {
+            background: white;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .hole-card.completed {
+            background: #f0f7ff;
+            border-color: #2a5298;
+        }
+
+        .hole-card h4 {
+            color: #2a5298;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .hole-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .hole-info div {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .hole-info strong {
+            color: #2a5298;
+        }
+
+        .score-input-group {
+            margin-bottom: 10px;
+        }
+
+        .score-input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .score-input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .score-input-group input:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .score-calculation {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .score-calculation div {
+            margin-bottom: 5px;
+        }
+
+        .score-calculation strong {
+            color: #2a5298;
+        }
+
+        /* SUMMARY */
+        .summary-card {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-item .value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-item .label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        /* GRAPHS */
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container h4 {
+            color: #2a5298;
+            margin-bottom: 15px;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 200px;
+            gap: 5px;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            white-space: nowrap;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        /* STATUS MESSAGES */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #1565c0;
+        }
+
+        /* PROGRESS */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2a5298 0%, #1e3c72 100%);
+            transition: width 0.3s ease;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            color: #2a5298;
+            margin-bottom: 20px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .holes-container {
+                grid-template-columns: 1fr;
+            }
+
+            .player-info {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .success-animation {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⛳ GPAR</h1>
+            <p>Golf Score Calculator - Creado por Giovani Galeano</p>
+        </header>
+
+        <!-- LOGIN SCREEN -->
+        <div id="loginScreen" class="screen active">
+            <div class="card">
+                <h2 style="color: #2a5298; text-align: center; margin-bottom: 30px;">Bienvenido a GPAR</h2>
+                <form class="login-form" onsubmit="handleLogin(event)">
+                    <input type="text" id="playerName" placeholder="Tu nombre completo" required>
+                    <input type="number" id="playerHandicap" placeholder="Handicap index (ej: 10)" min="0" max="54" step="0.1" required>
+                    <button type="submit">Comenzar a jugar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- COURSE SELECTION SCREEN -->
+        <div id="courseScreen" class="screen">
+            <div class="card">
+                <h2 style="color: #2a5298; margin-bottom: 20px;">Selecciona el campo</h2>
+                
+                <div class="course-option" onclick="selectCourse(1)">
+                    <h3>Club El Rincón de Cajicá</h3>
+                    <p>Par 72 | 7,464 yardas | Rating 75.4 | Slope 137</p>
+                    <p>Cajicá, Cundinamarca</p>
+                </div>
+
+                <div class="course-option" onclick="selectCourse(2)">
+                    <h3>Hato Grande Golf & Country Club</h3>
+                    <p>Par 72 | 7,117 yardas | Rating 74.3 | Slope 132</p>
+                    <p>Sopó, Cundinamarca</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEE SELECTION SCREEN -->
+        <div id="teeScreen" class="screen">
+            <div class="card">
+                <h2 style="color: #2a5298; margin-bottom: 20px;">Selecciona tu tee de salida</h2>
+                
+                <div class="tee-grid">
+                    <div class="tee-option" onclick="selectTee('Campeonato')">
+                        <h4>🏆</h4>
+                        <h4>Campeonato</h4>
+                        <p>7,600 yds</p>
+                    </div>
+                    <div class="tee-option" onclick="selectTee('Oro')">
+                        <h4>🥇</h4>
+                        <h4>Oro</h4>
+                        <p>7,400 yds</p>
+                    </div>
+                    <div class="tee-option" onclick="selectTee('Azul')">
+                        <h4>🔵</h4>
+                        <h4>Azul</h4>
+                        <p>7,100 yds</p>
+                    </div>
+                    <div class="tee-option" onclick="selectTee('Blanco')">
+                        <h4>⚪</h4>
+                        <h4>Blanco</h4>
+                        <p>6,800 yds</p>
+                    </div>
+                    <div class="tee-option" onclick="selectTee('Rojo')">
+                        <h4>🔴</h4>
+                        <h4>Rojo</h4>
+                        <p>6,400 yds</p>
+                    </div>
+                </div>
+                
+                <button type="button" onclick="goBack(2)">Volver</button>
+            </div>
+        </div>
+
+        <!-- SCORECARD SCREEN -->
+        <div id="scorecardScreen" class="screen">
+            <div class="scorecard-header">
+                <h2>Ronda en progreso</h2>
+                <div class="player-info">
+                    <div>
+                        <strong>Jugador:</strong>
+                        <span id="playerNameDisplay"></span>
+                    </div>
+                    <div>
+                        <strong>Handicap:</strong>
+                        <span id="playerHandicapDisplay"></span>
+                    </div>
+                    <div>
+                        <strong>Campo:</strong>
+                        <span>Club El Rincón</span>
+                    </div>
+                    <div>
+                        <strong>Tee:</strong>
+                        <span id="teeDisplay"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="border-radius: 0; padding-top: 20px;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+                </div>
+
+                <div id="holesContainer" class="holes-container"></div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <button type="button" onclick="goBack(3)">Volver</button>
+                    <button type="button" onclick="completRound()">Finalizar Ronda</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY SCREEN -->
+        <div id="summaryScreen" class="screen">
+            <div class="summary-card">
+                <h3>🏁 Ronda Completada</h3>
+                <p id="summaryDate" style="opacity: 0.9; margin-bottom: 20px;"></p>
+                
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="value" id="totalScoreDisplay">-</div>
+                        <div class="label">Score Bruto</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="value" id="netScoreDisplay">-</div>
+                        <div class="label">Score Neto</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="value" id="differentialDisplay">-</div>
+                        <div class="label">Diferencial</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="value" id="newHandicapDisplay">-</div>
+                        <div class="label">Nuevo Handicap</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="color: #2a5298; margin-bottom: 15px;">📊 Análisis por Hoyo</h3>
+                <div class="chart-container">
+                    <h4>Score por Hoyo (vs Par)</h4>
+                    <div class="bar-chart" id="scoreChart"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="color: #2a5298; margin-bottom: 15px;">📋 Detalles</h3>
+                <div id="summaryDetails"></div>
+            </div>
+
+            <div class="card">
+                <button type="button" onclick="newRound()">Jugar Otra Ronda</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // DATA & STATE
+        // ============================================
+
+        const golfData = {
+            courses: {
+                1: {
+                    id: 1,
+                    name: "Club El Rincón de Cajicá",
+                    par: 72,
+                    rating: 75.4,
+                    slope: 137,
+                    holes: [
+                        { number: 1, par: 4, handicap: 7, yardages: { Campeonato: 425, Oro: 410, Azul: 390, Blanco: 375, Rojo: 360 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 2, par: 3, handicap: 15, yardages: { Campeonato: 210, Oro: 195, Azul: 180, Blanco: 165, Rojo: 150 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 3, par: 5, handicap: 3, yardages: { Campeonato: 580, Oro: 560, Azul: 540, Blanco: 520, Rojo: 500 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 4, par: 4, handicap: 9, yardages: { Campeonato: 450, Oro: 430, Azul: 410, Blanco: 390, Rojo: 370 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 5, par: 4, handicap: 5, yardages: { Campeonato: 480, Oro: 460, Azul: 440, Blanco: 420, Rojo: 400 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 6, par: 3, handicap: 17, yardages: { Campeonato: 195, Oro: 180, Azul: 165, Blanco: 150, Rojo: 135 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 7, par: 5, handicap: 1, yardages: { Campeonato: 600, Oro: 580, Azul: 560, Blanco: 540, Rojo: 520 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 8, par: 4, handicap: 11, yardages: { Campeonato: 420, Oro: 400, Azul: 380, Blanco: 360, Rojo: 340 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 9, par: 4, handicap: 13, yardages: { Campeonato: 440, Oro: 420, Azul: 400, Blanco: 380, Rojo: 360 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 10, par: 4, handicap: 6, yardages: { Campeonato: 470, Oro: 450, Azul: 430, Blanco: 410, Rojo: 390 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 11, par: 3, handicap: 18, yardages: { Campeonato: 185, Oro: 170, Azul: 155, Blanco: 140, Rojo: 125 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 12, par: 5, handicap: 2, yardages: { Campeonato: 590, Oro: 570, Azul: 550, Blanco: 530, Rojo: 510 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 13, par: 4, handicap: 8, yardages: { Campeonato: 460, Oro: 440, Azul: 420, Blanco: 400, Rojo: 380 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 14, par: 3, handicap: 16, yardages: { Campeonato: 200, Oro: 185, Azul: 170, Blanco: 155, Rojo: 140 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 15, par: 4, handicap: 10, yardages: { Campeonato: 430, Oro: 410, Azul: 390, Blanco: 370, Rojo: 350 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 16, par: 4, handicap: 4, yardages: { Campeonato: 490, Oro: 470, Azul: 450, Blanco: 430, Rojo: 410 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 17, par: 3, handicap: 14, yardages: { Campeonato: 215, Oro: 200, Azul: 185, Blanco: 170, Rojo: 155 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 18, par: 5, handicap: 12, yardages: { Campeonato: 570, Oro: 550, Azul: 530, Blanco: 510, Rojo: 490 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' }
+                    ]
+                },
+                2: {
+                    id: 2,
+                    name: "Hato Grande Golf & Country Club",
+                    par: 72,
+                    rating: 74.3,
+                    slope: 132,
+                    holes: [
+                        { number: 1, par: 4, handicap: 8, yardages: { Campeonato: 415, Oro: 400, Azul: 380, Blanco: 365, Rojo: 350 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 2, par: 4, handicap: 10, yardages: { Campeonato: 410, Oro: 395, Azul: 375, Blanco: 360, Rojo: 345 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 3, par: 5, handicap: 2, yardages: { Campeonato: 560, Oro: 540, Azul: 520, Blanco: 500, Rojo: 480 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 4, par: 3, handicap: 16, yardages: { Campeonato: 185, Oro: 170, Azul: 155, Blanco: 140, Rojo: 125 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 5, par: 4, handicap: 6, yardages: { Campeonato: 460, Oro: 440, Azul: 420, Blanco: 400, Rojo: 380 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 6, par: 3, handicap: 14, yardages: { Campeonato: 205, Oro: 190, Azul: 175, Blanco: 160, Rojo: 145 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 7, par: 4, handicap: 4, yardages: { Campeonato: 480, Oro: 460, Azul: 440, Blanco: 420, Rojo: 400 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 8, par: 5, handicap: 12, yardages: { Campeonato: 540, Oro: 520, Azul: 500, Blanco: 480, Rojo: 460 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 9, par: 4, handicap: 18, yardages: { Campeonato: 390, Oro: 375, Azul: 360, Blanco: 345, Rojo: 330 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 10, par: 4, handicap: 7, yardages: { Campeonato: 440, Oro: 420, Azul: 400, Blanco: 380, Rojo: 360 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 11, par: 3, handicap: 17, yardages: { Campeonato: 195, Oro: 180, Azul: 165, Blanco: 150, Rojo: 135 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 12, par: 5, handicap: 1, yardages: { Campeonato: 580, Oro: 560, Azul: 540, Blanco: 520, Rojo: 500 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 13, par: 4, handicap: 9, yardages: { Campeonato: 430, Oro: 410, Azul: 390, Blanco: 370, Rojo: 350 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 14, par: 4, handicap: 5, yardages: { Campeonato: 470, Oro: 450, Azul: 430, Blanco: 410, Rojo: 390 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 15, par: 3, handicap: 15, yardages: { Campeonato: 190, Oro: 175, Azul: 160, Blanco: 145, Rojo: 130 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 16, par: 4, handicap: 11, yardages: { Campeonato: 420, Oro: 400, Azul: 380, Blanco: 360, Rojo: 340 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' },
+                        { number: 17, par: 5, handicap: 3, yardages: { Campeonato: 570, Oro: 550, Azul: 530, Blanco: 510, Rojo: 490 }, photo: 'https://images.unsplash.com/photo-1587280591945-ce2e78c02e2f?w=500&h=300&fit=crop' },
+                        { number: 18, par: 4, handicap: 13, yardages: { Campeonato: 450, Oro: 430, Azul: 410, Blanco: 390, Rojo: 370 }, photo: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=300&fit=crop' }
+                    ]
+                }
+            },
+            player: {
+                name: '',
+                handicapIndex: 0,
+                courseName: '',
+                courseId: 0,
+                tee: '',
+                round: []
+            }
+        };
+
+        // ============================================
+        // NAVIGATION
+        // ============================================
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function goBack(step) {
+            if (step === 2) showScreen('courseScreen');
+            if (step === 3) showScreen('teeScreen');
+            if (step === 4) showScreen('scorecardScreen');
+        }
+
+        // ============================================
+        // LOGIN
+        // ============================================
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const name = document.getElementById('playerName').value;
+            const handicap = parseFloat(document.getElementById('playerHandicap').value);
+            
+            golfData.player.name = name;
+            golfData.player.handicapIndex = handicap;
+            
+            document.getElementById('playerNameDisplay').textContent = name;
+            document.getElementById('playerHandicapDisplay').textContent = handicap.toFixed(1);
+            
+            showScreen('courseScreen');
+        }
+
+        // ============================================
+        // COURSE SELECTION
+        // ============================================
+
+        function selectCourse(courseId) {
+            const course = golfData.courses[courseId];
+            golfData.player.courseId = courseId;
+            golfData.player.courseName = course.name;
+            showScreen('teeScreen');
+        }
+
+        // ============================================
+        // TEE SELECTION
+        // ============================================
+
+        function selectTee(tee) {
+            document.querySelectorAll('.tee-option').forEach(t => t.classList.remove('selected'));
+            event.target.closest('.tee-option').classList.add('selected');
+            
+            golfData.player.tee = tee;
+            document.getElementById('teeDisplay').textContent = tee;
+            
+            // Initialize round
+            initializeRound();
+            showScreen('scorecardScreen');
+        }
+
+        // ============================================
+        // ROUND LOGIC
+        // ============================================
+
+        function initializeRound() {
+            const course = golfData.courses[golfData.player.courseId];
+            golfData.player.round = course.holes.map(hole => ({
+                number: hole.number,
+                par: hole.par,
+                handicap: hole.handicap,
+                yardage: hole.yardages[golfData.player.tee],
+                score: null,
+                recommendedClub: getClub(hole.yardages[golfData.player.tee]),
+                netScore: null
+            }));
+            
+            renderHoles();
+        }
+
+        function getClub(yardage) {
+            if (yardage < 100) return "Cuña";
+            if (yardage < 130) return "9 Hierro";
+            if (yardage < 160) return "8 Hierro";
+            if (yardage < 190) return "7 Hierro";
+            if (yardage < 220) return "6 Hierro";
+            if (yardage < 250) return "5 Hierro";
+            if (yardage < 280) return "4 Hierro";
+            if (yardage < 310) return "3 Hierro";
+            if (yardage < 350) return "2 Hierro";
+            if (yardage < 380) return "Híbrido";
+            if (yardage < 420) return "4 Madera";
+            if (yardage < 480) return "3 Madera";
+            return "Driver";
+        }
+
+        function renderHoles() {
+            const container = document.getElementById('holesContainer');
+            container.innerHTML = '';
+            
+            golfData.player.round.forEach((hole, index) => {
+                const handicap = calculateHoleHandicap(hole.number);
+                const isCompleted = hole.score !== null;
+                
+                const html = `
+                    <div class="hole-card ${isCompleted ? 'completed' : ''}">
+                        ${hole.photo ? `<img src="${hole.photo}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px 8px 0 0; margin: -15px -15px 15px -15px; background: #ddd;">` : '<div style="width: 100%; height: 180px; background: linear-gradient(135deg, #ccc 0%, #999 100%); border-radius: 8px 8px 0 0; margin: -15px -15px 15px -15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">Sin foto disponible</div>'}
+                        <h4>Hoyo ${hole.number}</h4>
+                        <div class="hole-info">
+                            <div><strong>Par:</strong> ${hole.par}</div>
+                            <div><strong>Yardas:</strong> ${hole.yardage}</div>
+                            <div><strong>HCP:</strong> ${hole.handicap}</div>
+                            <div><strong>Club:</strong> ${hole.recommendedClub}</div>
+                        </div>
+                        
+                        <div class="score-input-group">
+                            <label>Score:</label>
+                            <input type="number" 
+                                   id="score-${index}" 
+                                   min="1" max="13" 
+                                   value="${hole.score || ''}"
+                                   onchange="updateScore(${index}, this.value)"
+                                   placeholder="0">
+                        </div>
+                        
+                        ${isCompleted ? `
+                            <div class="score-calculation">
+                                <div><strong>Par:</strong> ${hole.par}</div>
+                                <div><strong>Score:</strong> ${hole.score}</div>
+                                <div><strong>Vs Par:</strong> ${hole.score - hole.par > 0 ? '+' : ''}${hole.score - hole.par}</div>
+                                <div><strong>Score Neto:</strong> ${hole.netScore}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                container.innerHTML += html;
+            });
+            
+            updateProgress();
+        }
+
+        function calculateHoleHandicap(holeNumber) {
+            // Aplicar handicap jugador al hoyo según dificultad
+            const courseHandicap = calculateCourseHandicap();
+            return Math.floor(courseHandicap / 18);
+        }
+
+        function calculateCourseHandicap() {
+            const course = golfData.courses[golfData.player.courseId];
+            return Math.round(golfData.player.handicapIndex * course.slope / 113 + (course.rating - course.par));
+        }
+
+        function updateScore(holeIndex, score) {
+            if (score === '' || score === null) {
+                golfData.player.round[holeIndex].score = null;
+                golfData.player.round[holeIndex].netScore = null;
+            } else {
+                const hole = golfData.player.round[holeIndex];
+                hole.score = parseInt(score);
+                
+                // Calcular score neto
+                const courseHandicap = calculateCourseHandicap();
+                const holeHandicap = Math.floor(courseHandicap / 18);
+                hole.netScore = Math.max(hole.score - holeHandicap, hole.par - 1);
+            }
+            
+            renderHoles();
+        }
+
+        function updateProgress() {
+            const completed = golfData.player.round.filter(h => h.score !== null).length;
+            const total = golfData.player.round.length;
+            const progress = (completed / total) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function allHolesCompleted() {
+            return golfData.player.round.every(h => h.score !== null && h.score > 0);
+        }
+
+        // ============================================
+        // SUMMARY & HANDICAP CALCULATION (USGA)
+        // ============================================
+
+        function completRound() {
+            const completedHoles = golfData.player.round.filter(h => h.score !== null && h.score > 0).length;
+            
+            if (completedHoles === 0) {
+                alert('Por favor ingresa al menos un score antes de finalizar.');
+                return;
+            }
+            
+            if (completedHoles < 18) {
+                const userConfirm = window.confirm(`Solo has completado ${completedHoles} de 18 hoyos.\n\n¿Deseas finalizar de todas formas?`);
+                if (!userConfirm) return;
+            }
+            
+            calculateFinalScores();
+            showScreen('summaryScreen');
+        }
+
+        function calculateFinalScores() {
+            const course = golfData.courses[golfData.player.courseId];
+            
+            // Filtrar solo hoyos completados
+            const completedHoles = golfData.player.round.filter(h => h.score !== null && h.score > 0);
+            
+            // Score bruto (suma de hoyos completados)
+            const totalScore = completedHoles.reduce((sum, hole) => sum + hole.score, 0);
+            
+            // Para cálculo de handicap, necesitamos ajustar por 18 hoyos
+            // Estimación: proyectar score a 18 hoyos
+            const holesPlayed = completedHoles.length;
+            const projectedScore = holesPlayed > 0 ? Math.round(totalScore * 18 / holesPlayed) : 0;
+            
+            // Diferencial USGA: (Score - Rating) × 113 / Slope
+            const differential = (projectedScore - course.rating) * 113 / course.slope;
+            
+            // Nuevo handicap: Promedio de mejores 8 de últimas 20 rondas
+            // Para MVP, suponemos que es la primera ronda
+            const newHandicapIndex = differential;
+            
+            // Score neto
+            const courseHandicap = calculateCourseHandicap();
+            const totalNetScore = completedHoles.reduce((sum, hole) => sum + hole.netScore, 0);
+            
+            // Mostrar resultados
+            document.getElementById('totalScoreDisplay').textContent = totalScore;
+            document.getElementById('netScoreDisplay').textContent = totalNetScore;
+            document.getElementById('differentialDisplay').textContent = differential.toFixed(1);
+            document.getElementById('newHandicapDisplay').textContent = newHandicapIndex.toFixed(1);
+            
+            // Fecha
+            const today = new Date();
+            document.getElementById('summaryDate').textContent = 
+                `${today.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+            
+            // Gráfico de scores
+            renderScoreChart();
+            
+            // Detalles
+            renderSummaryDetails(courseHandicap);
+        }
+
+        function renderScoreChart() {
+            const chartContainer = document.getElementById('scoreChart');
+            chartContainer.innerHTML = '';
+            
+            // Solo mostrar hoyos completados
+            const completedHoles = golfData.player.round.filter(h => h.score !== null && h.score > 0);
+            
+            if (completedHoles.length === 0) {
+                chartContainer.innerHTML = '<p style="text-align: center; color: #999;">No hay datos para mostrar</p>';
+                return;
+            }
+            
+            completedHoles.forEach(hole => {
+                const diff = hole.score - hole.par;
+                const height = (hole.score / (hole.par + 3)) * 100;
+                const color = hole.score === hole.par ? '#4caf50' : (hole.score < hole.par ? '#2196F3' : '#ff9800');
+                
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = height + '%';
+                bar.style.background = color;
+                bar.innerHTML = `
+                    <div class="bar-value">${hole.score}</div>
+                    <div class="bar-label">H${hole.number}</div>
+                `;
+                chartContainer.appendChild(bar);
+            });
+        }
+
+        function renderSummaryDetails(courseHandicap) {
+            const course = golfData.courses[golfData.player.courseId];
+            const totalScore = golfData.player.round.reduce((sum, hole) => sum + hole.score, 0);
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 2px solid #ddd;">
+                        <td style="padding: 10px; font-weight: bold;">Campo:</td>
+                        <td style="padding: 10px;">${course.name}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px; font-weight: bold;">Tee:</td>
+                        <td style="padding: 10px;">${golfData.player.tee}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px; font-weight: bold;">Rating:</td>
+                        <td style="padding: 10px;">${course.rating}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px; font-weight: bold;">Slope:</td>
+                        <td style="padding: 10px;">${course.slope}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px; font-weight: bold;">Handicap Curso:</td>
+                        <td style="padding: 10px;">${courseHandicap}</td>
+                    </tr>
+                    <tr style="border-bottom: 2px solid #ddd; background: #f5f5f5;">
+                        <td style="padding: 10px; font-weight: bold;">Score Bruto:</td>
+                        <td style="padding: 10px; font-weight: bold;">${totalScore}</td>
+                    </tr>
+                </table>
+            `;
+            
+            document.getElementById('summaryDetails').innerHTML = html;
+        }
+
+        function newRound() {
+            golfData.player.round = [];
+            showScreen('teeScreen');
+        }
+    </script>
+</body>
+</html>
